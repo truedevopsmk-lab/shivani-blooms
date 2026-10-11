@@ -1,4 +1,4 @@
-const CACHE_NAME = "shivani-blooms-v1";
+const CACHE_NAME = "shivani-blooms-v2";
 const APP_SHELL = ["./","./index.html","./styles.css","./app.js","./manifest.webmanifest","./assets/icon.svg","./assets/paris-sunset.jpg"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(()=>self.skipWaiting()));

@@ -44,7 +44,12 @@
   const dateHeading = key => parseDate(key).toLocaleDateString(undefined,{weekday:"long",day:"numeric",month:"short"});
   const completion = key => { const hs=data.habits.filter(h=>h.active); const done=hs.filter(h=>isDone(key,h.id)).length; return {done,total:hs.length,pct:hs.length?Math.round(done/hs.length*100):0}; };
   const iconColor = h => ["blue","", "gold","lavender","", "green"][h.color%6] || "";
-  function renderDate(){ $("#prettyDate").textContent=pretty(new Date()); }
+  function renderDate(){
+    const now=new Date(),hour=now.getHours();
+    const greeting=hour>=5&&hour<12?"Good morning,":hour>=12&&hour<17?"Good afternoon,":hour>=17&&hour<21?"Good evening,":"Good night,";
+    $("#prettyDate").textContent=pretty(now);
+    const greetingEl=$("#timeGreeting");if(greetingEl)greetingEl.textContent=greeting;
+  }
   function renderQuote(){
     const q=quotes[data.quoteIndex%quotes.length];
     $("#heroQuote").textContent=q; $("#progressQuote").textContent=q;
@@ -70,7 +75,7 @@
   }
   function habitHTML(h,key){
     const done=isDone(key,h.id);
-    return `<div class="habit-row"><span class="habit-icon ${iconColor(h)}">${escapeHTML(h.icon||"🌿")}</span><div class="habit-info"><strong>${escapeHTML(h.name)}</strong><small>${escapeHTML(h.goal||h.category||"One little step")}</small></div><button class="check-button ${done?"checked":""}" data-habit-check="${escapeHTML(h.id)}" data-date="${key}" aria-label="${done?"Mark incomplete":"Complete"} ${escapeHTML(h.name)}">${done?"✓":""}</button></div>`;
+    return `<div class="habit-row" data-habit-row="${escapeHTML(h.id)}" data-date="${key}"><span class="habit-icon ${iconColor(h)}">${escapeHTML(h.icon||"🌿")}</span><div class="habit-info"><strong>${escapeHTML(h.name)}</strong><small>${escapeHTML(h.goal||h.category||"One little step")}</small></div><button type="button" class="check-button ${done?"checked":""}" data-habit-check="${escapeHTML(h.id)}" data-date="${key}" aria-pressed="${done?"true":"false"}" aria-label="${done?"Mark incomplete":"Complete"} ${escapeHTML(h.name)}">${done?"✓":""}</button></div>`;
   }
   function emptyState(title,copy){return `<div class="card" style="text-align:center;padding:24px"><div style="font-size:27px;margin-bottom:8px">🌷</div><strong>${title}</strong><p class="muted">${copy}</p></div>`;}
   function renderManage(){
@@ -127,7 +132,13 @@
   document.addEventListener("click",e=>{
     const nav=e.target.closest("[data-nav]");if(nav){navigate(nav.dataset.nav);return;}
     const go=e.target.closest("[data-go]");if(go){navigate(go.dataset.go);return;}
-    const check=e.target.closest("[data-habit-check]");if(check){const key=check.dataset.date,id=check.dataset.habit;const entry=entryFor(key);entry.habits[id]=!entry.habits[id];save();renderAll();showToast(entry.habits[id]?"A little win, just for you ✓":"Updated — it's your journey.");return;}
+    const check=e.target.closest("[data-habit-check]");
+    const habitRow=e.target.closest("[data-habit-row]");
+    // The check button and the rest of the habit card both toggle completion.
+    if(check || (habitRow && !e.target.closest("button"))){
+      const target=check||habitRow,key=target.dataset.date||todayISO(),id=check?check.dataset.habit:habitRow.dataset.habitRow;
+      const entry=entryFor(key);entry.habits[id]=!entry.habits[id];save();renderAll();showToast(entry.habits[id]?"A little win, just for you ✓":"Updated — it's your journey.");return;
+    }
     const todoCheck=e.target.closest("[data-todo-check]");if(todoCheck){const list=data.todos[todayISO()]||[];list[Number(todoCheck.dataset.todoCheck)].done=!list[Number(todoCheck.dataset.todoCheck)].done;save();renderHome();return;}
     const todoDelete=e.target.closest("[data-todo-delete]");if(todoDelete){data.todos[todayISO()].splice(Number(todoDelete.dataset.todoDelete),1);save();renderHome();return;}
     const mood=e.target.closest("[data-mood]");if(mood){entryFor(todayISO()).mood=mood.dataset.mood;save();renderHome();showToast("Check-in saved. Be gentle with yourself.");return;}
@@ -157,4 +168,6 @@
   // Service workers only run on HTTPS or localhost.
   if("serviceWorker" in navigator && location.protocol!=="file:") window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
   renderAll();
+  // Refresh the greeting if the app stays open across a time-of-day boundary.
+  setInterval(renderDate,60*1000);
 })();

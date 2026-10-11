@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7e7e3">
+  <meta name="description" content="A gentle daily habit garden for Shivani — small steps, brighter days.">
+  <title>Shivani Blooms 🌷</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./assets/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./assets/icon.svg">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Shivani Blooms home"><span class="brand-mark">✿</span><span>shivani <b>blooms</b></span></a>
+      <button class="icon-button" id="quoteRefresh" aria-label="Show another quote" title="Another little reminder">✧</button>
+    </header>
+
+    <main>
+      <section class="view active" id="view-home" data-view="home">
+        <div class="hero" id="hero">
+          <img class="hero-photo" src="./assets/paris-sunset.jpg" alt="Golden sunset behind the Eiffel Tower in Paris">
+          <div class="hero-shade"></div>
+          <div class="hero-copy">
+            <p class="eyebrow light">A LITTLE SPACE JUST FOR YOU</p>
+            <h1><span id="timeGreeting">Good morning,</span><br><span>Shivani</span> <span class="heart">♥</span></h1>
+            <p class="hero-quote" id="heroQuote">Small steps, taken with love, can change an ordinary day.</p>
+          </div>
+          <button class="dp-button" id="dpButton" aria-label="Set profile picture">
+            <span class="dp" id="dpPreview">S<span class="dp-camera">＋</span></span>
+            <span>Set your photo</span>
+          </button>
+          <input type="file" id="dpInput" accept="image/*" hidden>
+        </div>
+
+        <div class="date-row"><span>☼</span><span id="prettyDate">Today</span><span class="date-note">one day at a time</span></div>
+
+        <section class="card progress-card">
+          <div class="section-head">
+            <div><p class="eyebrow">YOUR DAY, YOUR PACE</p><h2>Today's little wins</h2></div>
+            <span class="flower-stamp">✿</span>
+          </div>
+          <div class="progress-line">
+            <div><strong id="completedCount">0</strong><span class="muted"> / <span id="totalCount">0</span> habits</span></div>
+            <strong id="completionPct">0%</strong>
+          </div>
+          <div class="progress-track"><span id="progressFill"></span></div>
+          <p class="supportive" id="progressMessage">Every small step counts. Pick one to begin.</p>
+        </section>
+
+        <section class="section-block">
+          <div class="section-head"><div><p class="eyebrow">A GENTLE PLAN</p><h2>Today's checklist</h2></div><button class="text-button" data-go="habits">Edit habits ↗</button></div>
+          <div id="todayHabits" class="habit-list"></div>
+          <button class="add-inline" data-go="habits">＋ Add a habit that matters to you</button>
+        </section>
+
+        <section class="section-block">
+          <div class="section-head"><div><p class="eyebrow">ONE THING AT A TIME</p><h2>Little to-dos</h2></div><span class="tiny-label" id="todoSummary">0 done</span></div>
+          <form id="todoForm" class="todo-form"><input id="todoInput" type="text" maxlength="120" placeholder="Something you'd like to do today…" aria-label="New to-do"><button type="submit" aria-label="Add to-do">＋</button></form>
+          <div id="todoList" class="todo-list"></div>
+        </section>
+
+        <section class="card mood-card">
+          <div class="section-head"><div><p class="eyebrow">PAUSE & CHECK IN</p><h2>How are you feeling?</h2></div><span class="mood-sparkle">☁</span></div>
+          <div class="mood-options" id="moodOptions">
+            <button data-mood="Radiant" aria-label="Radiant mood"><span>☀️</span><small>Radiant</small></button>
+            <button data-mood="Good" aria-label="Good mood"><span>😊</span><small>Good</small></button>
+            <button data-mood="Okay" aria-label="Okay mood"><span>🌿</span><small>Okay</small></button>
+            <button data-mood="Tired" aria-label="Tired mood"><span>😴</span><small>Tired</small></button>
+            <button data-mood="Low" aria-label="Low mood"><span>🌧️</span><small>Low</small></button>
+          </div>
+          <p class="mood-note" id="moodNote">Whatever you're feeling, there's room for it here.</p>
+        </section>
+      </section>
+
+      <section class="view" id="view-habits" data-view="habits">
+        <div class="page-intro"><p class="eyebrow">MAKE IT YOURS</p><h1>Your habits <span class="heart">♥</span></h1><p>Choose routines that support the life you want. You can change them anytime.</p></div>
+        <section class="card add-habit-card">
+          <h2 id="habitFormTitle">Plant a new habit</h2>
+          <form id="habitForm">
+            <label for="habitName">Habit name</label><input id="habitName" maxlength="70" required placeholder="e.g. Read for 10 minutes">
+            <div class="form-grid">
+              <div><label for="habitCategory">Category</label><select id="habitCategory"><option>Daily Routine</option><option>Health & Wellness</option><option>Personal Growth</option><option>Self Care</option><option>Home & Life</option><option>Work</option></select></div>
+              <div><label for="habitIcon">Little icon</label><select id="habitIcon"><option value="🌿">🌿 Leaf</option><option value="💧">💧 Water</option><option value="🧘🏻‍♀️">🧘🏻‍♀️ Mindfulness</option><option value="🚶🏻‍♀️">🚶🏻‍♀️ Movement</option><option value="📚">📚 Reading</option><option value="💗">💗 Self care</option><option value="🥗">🥗 Nourishment</option><option value="✨">✨ Personal</option><option value="🏡">🏡 Home</option><option value="✍️">✍️ Journaling</option></select></div>
+            </div>
+            <label for="habitGoal">Optional goal or note</label><input id="habitGoal" maxlength="100" placeholder="e.g. 8 glasses, 15 minutes, before bed">
+            <label class="toggle-row"><span><b>Show on today's checklist</b><small>Keep it in your daily view</small></span><input id="habitActive" type="checkbox" checked><i></i></label>
+            <div class="form-actions"><button class="button button-primary" type="submit" id="habitSubmit">＋ Add habit</button><button class="button button-quiet" type="button" id="cancelEdit" hidden>Cancel</button></div>
+          </form>
+        </section>
+        <div class="section-head section-gap"><div><p class="eyebrow">YOUR PERSONAL GARDEN</p><h2>All habits</h2></div><span class="tiny-label" id="habitTotalLabel">0 habits</span></div>
+        <div id="manageHabitList" class="manage-list"></div>
+        <p class="privacy-note">🌱 Your routines belong to you. Habits you archive are removed from your daily checklist, while their past history stays in your monthly view.</p>
+      </section>
+
+      <section class="view" id="view-month" data-view="month">
+        <div class="page-intro"><p class="eyebrow">NOTICE YOUR GROWTH</p><h1>Monthly garden <span class="heart">♥</span></h1><p>A whole month of little choices. Tap any day to view or update its check-ins.</p></div>
+        <section class="card month-card">
+          <div class="month-controls"><button class="icon-button" id="prevMonth" aria-label="Previous month">‹</button><h2 id="monthTitle">October 2026</h2><button class="icon-button" id="nextMonth" aria-label="Next month">›</button></div>
+          <div class="month-legend" id="monthLegend"></div>
+          <div class="month-grid-wrap"><div id="monthGrid" class="month-grid"></div></div>
+          <div class="month-foot"><span>○ Not checked</span><span>✓ Completed</span><span id="monthCompletion">0% this month</span></div>
+        </section>
+        <section class="section-block">
+          <div class="section-head"><div><p class="eyebrow">A CLOSER LOOK</p><h2 id="selectedDayTitle">Today's check-ins</h2></div><span class="tiny-label" id="selectedDaySummary"></span></div>
+          <div id="selectedDayHabits" class="habit-list"></div>
+        </section>
+        <section class="card monthly-summary">
+          <p class="eyebrow">MONTHLY MOMENTUM</p><h2>Consistency over perfection.</h2>
+          <p id="monthlyMessage">Every checked box is a moment you showed up for yourself.</p>
+          <div id="monthlyStats" class="stat-row"></div>
+        </section>
+      </section>
+
+      <section class="view" id="view-progress" data-view="progress">
+        <div class="page-intro"><p class="eyebrow">LOOK HOW FAR YOU'VE COME</p><h1>Your progress <span class="heart">♥</span></h1><p>Progress isn't a straight line. This is a place to notice the effort you're making.</p></div>
+        <section class="card progress-overview">
+          <p class="eyebrow">THIS MONTH</p><div class="big-stat" id="monthPct">0%</div><p class="muted">of scheduled habit check-ins completed</p><div class="progress-track"><span id="monthProgressFill"></span></div>
+          <div class="stat-row"><div><strong id="activeHabitsStat">0</strong><small>active habits</small></div><div><strong id="daysLoggedStat">0</strong><small>days checked in</small></div><div><strong id="bestDayStat">—</strong><small>best day</small></div></div>
+        </section>
+        <section class="section-block"><div class="section-head"><div><p class="eyebrow">BY THE HABIT</p><h2>Monthly consistency</h2></div></div><div id="habitStats" class="stats-list"></div></section>
+        <section class="card quote-card"><span class="quote-mark">“</span><p id="progressQuote">You don't have to do it all. You just have to begin.</p><small>A little reminder for you</small></section>
+        <section class="card data-card"><p class="eyebrow">YOUR DATA, YOUR CHOICE</p><h2>Keep your memories safe</h2><p>Export a backup now and then. Your entries stay in this browser unless you export them yourself.</p><div class="data-actions"><button class="button button-primary" id="exportJson">Export backup</button><button class="button button-secondary" id="exportCsv">Export CSV</button><button class="button button-quiet" id="importButton">Restore backup</button><input id="importInput" type="file" accept=".json,application/json" hidden></div></section>
+      </section>
+
+      <section class="view" id="view-more" data-view="more">
+        <div class="page-intro"><p class="eyebrow">YOUR SPACE, YOUR WAY</p><h1>A little more <span class="heart">♥</span></h1></div>
+        <section class="card profile-card"><button class="profile-edit" id="profileEdit" aria-label="Change profile picture">✎</button><span class="profile-avatar" id="profileAvatar">S</span><div><h2>Shivani <span class="heart">♥</span></h2><p>Growing at your own pace.</p><button class="text-button" id="profilePhotoText">Change profile photo</button></div></section>
+        <div class="settings-list">
+          <button data-go="habits"><span>🌱</span><span><b>My habits</b><small>Add, edit, pause or archive routines</small></span><i>›</i></button>
+          <button data-go="month"><span>🗓️</span><span><b>Monthly tracker</b><small>Your colour-coded habit calendar</small></span><i>›</i></button>
+          <button data-go="progress"><span>🌷</span><span><b>Progress & insights</b><small>See your consistency over time</small></span><i>›</i></button>
+          <button id="settingsQuote"><span>💌</span><span><b>Daily encouragement</b><small>Show me another quote</small></span><i>›</i></button>
+          <button id="backupSettings"><span>📦</span><span><b>Export my data</b><small>Save a copy of your habits and history</small></span><i>›</i></button>
+        </div>
+        <section class="card privacy-card"><span>🔒</span><div><h2>Private by design</h2><p>Your habits and mood are stored on this device in this browser. They are not sent to an app server. This also means data does not automatically sync to another device or browser.</p></div></section>
+        <div class="mantra">Consistency<br><em>creates magic</em> <span>♥</span></div>
+        <p class="version-note">Shivani Blooms · made with love 🌷</p>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Main navigation">
+      <button class="nav-item active" data-nav="home"><span>⌂</span><small>Home</small></button>
+      <button class="nav-item" data-nav="habits"><span>♧</span><small>Habits</small></button>
+      <button class="nav-item nav-add" data-nav="habits" aria-label="Add a habit"><span>＋</span><small>Add</small></button>
+      <button class="nav-item" data-nav="month"><span>▦</span><small>Month</small></button>
+      <button class="nav-item" data-nav="progress"><span>⌁</span><small>Progress</small></button>
+      <button class="nav-item" data-nav="more"><span>•••</span><small>More</small></button>
+    </nav>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </div>
+  <script src="./app.js" defer></script>
+</body>
+</html>
