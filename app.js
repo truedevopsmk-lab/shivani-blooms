@@ -75,7 +75,7 @@
   }
   function habitHTML(h,key){
     const done=isDone(key,h.id);
-    return `<div class="habit-row" data-habit-row="${escapeHTML(h.id)}" data-date="${key}"><span class="habit-icon ${iconColor(h)}">${escapeHTML(h.icon||"🌿")}</span><div class="habit-info"><strong>${escapeHTML(h.name)}</strong><small>${escapeHTML(h.goal||h.category||"One little step")}</small></div><button type="button" class="check-button ${done?"checked":""}" data-habit-check="${escapeHTML(h.id)}" data-date="${key}" aria-pressed="${done?"true":"false"}" aria-label="${done?"Mark incomplete":"Complete"} ${escapeHTML(h.name)}">${done?"✓":""}</button></div>`;
+    return `<div class="habit-row" data-habit-row="${escapeHTML(h.id)}" data-date="${key}"><span class="habit-icon ${iconColor(h)}">${escapeHTML(h.icon||"🌿")}</span><div class="habit-info"><strong>${escapeHTML(h.name)}</strong><small>${escapeHTML(h.goal||h.category||"One little step")}</small></div><button class="check-button ${done?"checked":""}" data-habit-check="${escapeHTML(h.id)}" data-date="${key}" aria-label="${done?"Mark incomplete":"Complete"} ${escapeHTML(h.name)}">${done?"✓":""}</button></div>`;
   }
   function emptyState(title,copy){return `<div class="card" style="text-align:center;padding:24px"><div style="font-size:27px;margin-bottom:8px">🌷</div><strong>${title}</strong><p class="muted">${copy}</p></div>`;}
   function renderManage(){
@@ -130,44 +130,35 @@
     const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{const canvas=document.createElement("canvas"),max=500,scale=Math.min(1,max/Math.max(img.width,img.height));canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);data.profilePhoto=canvas.toDataURL("image/jpeg",.82);save();renderDP();showToast("Your photo is set 💗");};img.src=reader.result;};reader.readAsDataURL(file);
   }
   document.addEventListener("click",e=>{
-    // Safari can occasionally report a non-Element target (for example, a text node).
-    const clicked=e.target instanceof Element?e.target:e.target?.parentElement;
-    if(!clicked)return;
-    const nav=clicked.closest("[data-nav]");if(nav){navigate(nav.dataset.nav);return;}
-    const go=clicked.closest("[data-go]");if(go){navigate(go.dataset.go);return;}
-    const check=clicked.closest("[data-habit-check]");
-    const habitRow=clicked.closest("[data-habit-row]");
-    // Use the saved state as the source of truth, then explicitly sync the visible
-    // check button after rerendering. This avoids a stale/blank checkbox on Safari.
-    if(check || (habitRow && !clicked.closest("button"))){
+    const nav=e.target.closest("[data-nav]");if(nav){navigate(nav.dataset.nav);return;}
+    const go=e.target.closest("[data-go]");if(go){navigate(go.dataset.go);return;}
+    // Resolve exactly one habit control per click. The checkbox is handled first;
+    // clicks on the surrounding card only count when they are not on another button.
+    const check=e.target instanceof Element ? e.target.closest("button[data-habit-check]") : null;
+    const habitRow=e.target instanceof Element ? e.target.closest("[data-habit-row]") : null;
+    const clickedHabit=check || (habitRow && !(e.target instanceof Element && e.target.closest("button")) ? habitRow : null);
+    if(clickedHabit){
       e.preventDefault();
-      const target=check||habitRow;
-      const key=target.dataset.date||todayISO();
-      const id=check?check.dataset.habit:habitRow.dataset.habitRow;
+      const key=clickedHabit.getAttribute("data-date") || todayISO();
+      const id=check ? check.getAttribute("data-habit-check") : clickedHabit.getAttribute("data-habit-row");
+      // Set only the clicked habit's boolean; never toggle an entire collection.
+      if(!id || !data.habits.some(h=>h.id===id)) return;
       const entry=entryFor(key);
-      const nextDone=!isDone(key,id);
-      entry.habits[id]=nextDone;
+      const done=!isDone(key,id);
+      entry.habits[id]=done;
       save();
       renderAll();
-      // Explicit visual sync makes the checkmark visible immediately on touch devices.
-      document.querySelectorAll("[data-habit-check]").forEach(button=>{
-        if(button.dataset.habit===id && (button.dataset.date||todayISO())===key){
-          button.classList.toggle("checked",nextDone);
-          button.textContent=nextDone?"✓":"";
-          button.setAttribute("aria-label",`${nextDone?"Mark incomplete":"Complete"} ${data.habits.find(h=>h.id===id)?.name||"habit"}`);
-        }
-      });
-      showToast(nextDone?"A little win, just for you ✓":"Updated — it's your journey.");
+      showToast(done ? "A little win, just for you ✓" : "Updated — it's your journey.");
       return;
     }
-    const todoCheck=clicked.closest("[data-todo-check]");if(todoCheck){const list=data.todos[todayISO()]||[];list[Number(todoCheck.dataset.todoCheck)].done=!list[Number(todoCheck.dataset.todoCheck)].done;save();renderHome();return;}
-    const todoDelete=clicked.closest("[data-todo-delete]");if(todoDelete){data.todos[todayISO()].splice(Number(todoDelete.dataset.todoDelete),1);save();renderHome();return;}
-    const mood=clicked.closest("[data-mood]");if(mood){entryFor(todayISO()).mood=mood.dataset.mood;save();renderHome();showToast("Check-in saved. Be gentle with yourself.");return;}
-    const edit=clicked.closest("[data-edit]");if(edit){const h=data.habits.find(x=>x.id===edit.dataset.edit);if(!h)return;editingId=h.id;$("#habitName").value=h.name;$("#habitCategory").value=h.category;$("#habitIcon").value=h.icon;$("#habitGoal").value=h.goal||"";$("#habitActive").checked=h.active;$("#habitFormTitle").textContent="Tend to this habit";$("#habitSubmit").textContent="Save changes";$("#cancelEdit").hidden=false;window.scrollTo({top:0,behavior:"smooth"});return;}
-    const pause=clicked.closest("[data-pause]");if(pause){const h=data.habits.find(x=>x.id===pause.dataset.pause);h.active=!h.active;save();renderAll();showToast(h.active?"Habit resumed 🌱":"Habit paused — no pressure.");return;}
-    const archive=clicked.closest("[data-archive]");if(archive){const h=data.habits.find(x=>x.id===archive.dataset.archive);if(confirm(`Archive “${h.name}”? Past check-ins will be kept.`)){h.active=false;h.archived=true;save();renderAll();showToast("Habit archived. Its history is kept.");}return;}
-    const deleteHabit=clicked.closest("[data-delete-habit]");if(deleteHabit){const h=data.habits.find(x=>x.id===deleteHabit.dataset.deleteHabit);if(!h)return;if(confirm(`Delete “${h.name}”? This removes the habit from your list and monthly overview. Export a backup first if you want to keep its history.`)){data.habits=data.habits.filter(x=>x.id!==h.id);save();renderAll();showToast("Habit removed. Make room for what matters 🌱");}return;}
-    const selectDate=clicked.closest("[data-select-date]");if(selectDate){selectedDate=selectDate.dataset.selectDate;renderMonth();return;}
+    const todoCheck=e.target.closest("[data-todo-check]");if(todoCheck){const list=data.todos[todayISO()]||[];list[Number(todoCheck.dataset.todoCheck)].done=!list[Number(todoCheck.dataset.todoCheck)].done;save();renderHome();return;}
+    const todoDelete=e.target.closest("[data-todo-delete]");if(todoDelete){data.todos[todayISO()].splice(Number(todoDelete.dataset.todoDelete),1);save();renderHome();return;}
+    const mood=e.target.closest("[data-mood]");if(mood){entryFor(todayISO()).mood=mood.dataset.mood;save();renderHome();showToast("Check-in saved. Be gentle with yourself.");return;}
+    const edit=e.target.closest("[data-edit]");if(edit){const h=data.habits.find(x=>x.id===edit.dataset.edit);if(!h)return;editingId=h.id;$("#habitName").value=h.name;$("#habitCategory").value=h.category;$("#habitIcon").value=h.icon;$("#habitGoal").value=h.goal||"";$("#habitActive").checked=h.active;$("#habitFormTitle").textContent="Tend to this habit";$("#habitSubmit").textContent="Save changes";$("#cancelEdit").hidden=false;window.scrollTo({top:0,behavior:"smooth"});return;}
+    const pause=e.target.closest("[data-pause]");if(pause){const h=data.habits.find(x=>x.id===pause.dataset.pause);h.active=!h.active;save();renderAll();showToast(h.active?"Habit resumed 🌱":"Habit paused — no pressure.");return;}
+    const archive=e.target.closest("[data-archive]");if(archive){const h=data.habits.find(x=>x.id===archive.dataset.archive);if(confirm(`Archive “${h.name}”? Past check-ins will be kept.`)){h.active=false;h.archived=true;save();renderAll();showToast("Habit archived. Its history is kept.");}return;}
+    const deleteHabit=e.target.closest("[data-delete-habit]");if(deleteHabit){const h=data.habits.find(x=>x.id===deleteHabit.dataset.deleteHabit);if(!h)return;if(confirm(`Delete “${h.name}”? This removes the habit from your list and monthly overview. Export a backup first if you want to keep its history.`)){data.habits=data.habits.filter(x=>x.id!==h.id);save();renderAll();showToast("Habit removed. Make room for what matters 🌱");}return;}
+    const selectDate=e.target.closest("[data-select-date]");if(selectDate){selectedDate=selectDate.dataset.selectDate;renderMonth();return;}
   });
   $("#habitForm").addEventListener("submit",e=>{
     e.preventDefault();const name=$("#habitName").value.trim();if(!name)return;
